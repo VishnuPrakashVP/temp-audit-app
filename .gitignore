@@ -1,0 +1,14 @@
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+
+# Secrets
+.env
+
+# Frontend (for later)
+node_modules/
+dist/
+
+# Mac clutter
+.DS_Store
