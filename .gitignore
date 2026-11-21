@@ -1,0 +1,6 @@
+venv/
+.env
+__pycache__/
+temps.db
+CLAUDE.md
+DEVLOG.md
