@@ -13,16 +13,3 @@ LOCATIONS = [
 LocationName = StrEnum(
     "LocationName", {location["name"]: location["name"] for location in LOCATIONS}
 )
-
-
-def get_location(name):
-    """Return the location with this name, or None if there isn't one."""
-    for location in LOCATIONS:
-        if location["name"] == name:
-            return location
-    return None
-
-
-def get_departments():
-    """Return every department name once, sorted."""
-    return sorted({location["department"] for location in LOCATIONS})

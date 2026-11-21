@@ -16,7 +16,7 @@ if not MONGODB_URI:
 client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000, tz_aware=True)
 
 database = client["temp_audit"]
-readings_collection = database["readings"]
+audits_collection = database["audits"]
 
 
 def ping():

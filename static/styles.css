@@ -1,0 +1,599 @@
+/* ---------- Fonts (self-hosted, SIL OFL - see fonts/LICENSE.txt) ---------- */
+
+@font-face {
+  font-family: "Geist";
+  src: url("/static/fonts/Geist-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/static/fonts/GeistMono-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- Tokens ---------- */
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --ink: #0F172A;
+  --bg: #F5F6F8;
+  --surface: #FFFFFF;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --text-muted: #64748B;
+  --accent-action: #3D5AFE;
+  --accent-temp: #0EA5B7;
+  --accent-time: #F59E0B;
+  --ok: #16A34A;
+  --ok-bg: #F0FDF4;
+  --bad: #DC2626;
+  --bad-bg: #FEF2F2;
+
+  /* Derived for WCAG AA (ratios checked):
+     --ok/--bad as text on their tints are 3.2/4.4:1, so text uses these; */
+  --ok-text: #15803D;
+  --bad-text: #B91C1C;
+  /* --text-muted is 4.4:1 on --bg and --bad-bg, so text there uses this; */
+  --text-muted-on-tint: #5E6B7F;
+  /* --border is 1.2:1, too faint to outline an input (needs 3:1); */
+  --border-strong: #7C8BA1;
+  --on-action: #FFFFFF;
+  --chip-selected-bg: var(--ink);
+  --chip-selected-text: #FFFFFF;
+  --gauge-marker: var(--ink);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0B1120;
+  --surface: #111827;
+  --border: #1F2937;
+  --ink: #020617;
+  --text: #E5E7EB;
+  --text-muted: #94A3B8;
+  --accent-action: #6C82FF;
+  --accent-temp: #22D3EE;
+  --accent-time: #FBBF24;
+  --ok: #22C55E;
+  --ok-bg: #052E16;
+  --bad: #F87171;
+  --bad-bg: #2A0E0E;
+
+  --ok-text: var(--ok);
+  --bad-text: var(--bad);
+  --text-muted-on-tint: var(--text-muted);
+  --border-strong: #64748B;
+  /* White on the lighter dark-mode cobalt is only 3.4:1. */
+  --on-action: #0B1120;
+  /* Ink is darker than the dark surface (1.1:1), so "selected" inverts instead. */
+  --chip-selected-bg: var(--text);
+  --chip-selected-text: var(--surface);
+  --gauge-marker: var(--text);
+}
+
+:root {
+  /* The top bar is always ink, so its text colours don't change with the theme. */
+  --on-ink: #F8FAFC;
+  --on-ink-muted: #94A3B8;
+  --on-ink-bad: #F87171;
+  --on-ink-track: #334155;
+
+  --font-ui: "Geist", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius-card: 16px;
+  --radius-control: 12px;
+  --tap: 44px;
+  --ease: 150ms ease;
+  --gutter-left: max(16px, env(safe-area-inset-left));
+  --gutter-right: max(16px, env(safe-area-inset-right));
+}
+
+/* ---------- Base ---------- */
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono,
+input.temp,
+.progress-text,
+.badge,
+.history .time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* ---------- Top bar ---------- */
+
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  color: var(--on-ink);
+  background: var(--ink);
+}
+
+[data-theme="dark"] .top-bar { border-bottom: 1px solid var(--border); }
+
+.top-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 640px;
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 8px var(--gutter-right) 8px var(--gutter-left);
+}
+
+.top-bar-title { flex: 1; min-width: 0; }
+
+.top-bar h1 {
+  margin: 0;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.audit-info {
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.875rem;
+  color: var(--on-ink-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Counter on top, out-of-range count underneath, so the title keeps its room. */
+.progress-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin: 0;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.progress-text .count { font-size: 1.125rem; font-weight: 600; }
+.progress-text span:not(.count) { font-size: 0.75rem; color: var(--on-ink-muted); }
+.progress-text span.out { color: var(--on-ink-bad); }
+
+.theme-toggle {
+  flex: none;
+  width: var(--tap);
+  height: var(--tap);
+  padding: 0;
+  border: 1px solid var(--on-ink-track);
+  border-radius: var(--radius-control);
+  color: var(--on-ink);
+  background: transparent;
+}
+
+.theme-toggle:hover:not(:disabled) { background: var(--on-ink-track); }
+
+[data-theme="dark"] .icon-moon,
+[data-theme="light"] .icon-sun { display: none; }
+
+.progress-track { height: 4px; background: var(--on-ink-track); }
+
+.progress-bar {
+  width: 0;
+  height: 100%;
+  background: var(--accent-action);
+  transition: width var(--ease);
+}
+
+/* ---------- Layout ---------- */
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px var(--gutter-right) 48px var(--gutter-left);
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+#start-panel { padding: 16px; }
+
+.section-label {
+  margin: 0 0 8px 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted-on-tint);
+}
+
+.department + .department { margin-top: 24px; }
+
+/* Clips the rows' coloured left borders to the card's rounded corners. */
+.department .card { overflow: hidden; }
+
+/* ---------- Controls ---------- */
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+input, button { font: inherit; }
+
+input[type="text"] {
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color var(--ease), box-shadow var(--ease);
+}
+
+input[type="text"]::placeholder { color: var(--text-muted); }
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent-action);
+  box-shadow: 0 0 0 1px var(--accent-action);
+}
+
+input[type="text"]:disabled {
+  border-color: var(--border);
+  background: var(--bg);
+}
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  background: var(--surface);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--ease), color var(--ease), border-color var(--ease);
+}
+
+button:focus-visible,
+summary:focus-visible,
+.chip input:focus-visible + span {
+  outline: 2px solid var(--accent-action);
+  outline-offset: 2px;
+}
+
+.top-bar button:focus-visible { outline-color: var(--on-ink); }
+
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.action {
+  width: 100%;
+  min-height: 56px;
+  margin-top: 16px;
+  border: 0;
+  color: var(--on-action);
+  background: var(--accent-action);
+  font-size: 1rem;
+}
+
+#audit-panel .action { margin-top: 24px; }
+
+/* ---------- Checklist rows ---------- */
+
+.checklist { margin: 0; padding: 0; list-style: none; overflow: hidden; }
+
+.row {
+  padding: 16px;
+  border-left: 4px solid var(--border);
+  transition: background-color var(--ease), border-color var(--ease);
+}
+
+.row + .row { border-top: 1px solid var(--border); }
+
+.row.in_range { border-left-color: var(--ok); }
+.row.out_of_range { border-left-color: var(--bad); background: var(--bad-bg); }
+.row.skipped { border-left-color: var(--text-muted); }
+
+.row-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Info takes the spare room; if the row is too narrow, the entry wraps
+   underneath and stretches to full width. */
+.row-info { flex: 999 1 120px; min-width: 0; }
+.row-info strong { display: block; font-size: 1.0625rem; font-weight: 600; }
+
+.range { font-size: 0.875rem; color: var(--text-muted-on-tint); }
+.range .mono { white-space: nowrap; }
+
+.row-state {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-muted-on-tint);
+}
+
+.row-state:empty { display: none; }
+.row-state .icon { width: 16px; height: 16px; }
+.row.in_range .row-state { color: var(--ok-text); }
+.row.out_of_range .row-state { color: var(--bad-text); }
+
+.entry { display: flex; flex: 1 0 auto; gap: 8px; justify-content: flex-end; }
+
+.flip-sign {
+  flex: none;
+  width: 48px;
+  min-height: 56px;
+  padding: 0;
+  border-color: transparent;
+  color: var(--accent-action);
+  background: color-mix(in srgb, var(--accent-action) 12%, var(--surface));
+  font-size: 1.5rem;
+}
+
+.flip-sign:disabled { opacity: 0.35; }
+
+/* A fixed width (not the inherited 100%) lets the entry sit beside the name. */
+input.temp {
+  flex: 1 1 120px;
+  width: 120px;
+  max-width: 160px;
+  min-height: 56px;
+  font-size: 1.75rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.row-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+.reason-box { margin-top: 12px; }
+.reason-box label { color: var(--text-muted-on-tint); }
+
+.row-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* ---------- Range gauge ---------- */
+
+.gauge {
+  position: relative;
+  height: 8px;
+  margin: 16px 0 4px;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.gauge-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: var(--accent-temp);
+}
+
+.gauge-marker {
+  position: absolute;
+  top: -4px;
+  width: 4px;
+  height: 16px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--gauge-marker);
+  box-shadow: 0 0 0 2px var(--surface);
+  transition: left var(--ease);
+}
+
+/* ---------- Chips (filters, "Not checked") ---------- */
+
+.chips { display: flex; flex-wrap: wrap; gap: 0 8px; margin-bottom: 8px; }
+
+/* The label is the 44px touch target; the visible chip inside is 36px. */
+.chip { display: flex; align-items: center; min-height: var(--tap); margin: 0; cursor: pointer; }
+
+.chip input { position: absolute; opacity: 0; pointer-events: none; }
+
+.chip span,
+.skip-toggle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text);
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color var(--ease), color var(--ease), border-color var(--ease);
+}
+
+.skip-toggle { min-height: var(--tap); }
+
+.chip input:checked + span,
+.skip-toggle[aria-pressed="true"] {
+  border-color: var(--chip-selected-bg);
+  color: var(--chip-selected-text);
+  background: var(--chip-selected-bg);
+}
+
+/* ---------- Messages ---------- */
+
+.message {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid;
+  border-radius: var(--radius-card);
+}
+
+.message .icon { width: 22px; height: 22px; margin-top: 1px; }
+.message strong { display: block; }
+
+/* Audit results use status colours... */
+.message.ok { border-color: var(--ok); color: var(--ok-text); background: var(--ok-bg); }
+.message.bad { border-color: var(--bad); color: var(--bad-text); background: var(--bad-bg); }
+
+/* ...app errors stay neutral, so red always means "out of range". */
+.message.error { border-color: var(--border-strong); color: var(--text); background: var(--surface); }
+
+/* ---------- History ---------- */
+
+.history-section { margin-top: 40px; }
+
+.history { margin: 0; padding: 0; list-style: none; }
+
+.history > li {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.history > li + li { margin-top: 8px; }
+
+/* Grid keeps the chevron pinned right; badges stack instead of squeezing the name. */
+.history summary {
+  display: grid;
+  grid-template-columns: auto minmax(6rem, 1fr) auto auto;
+  align-items: center;
+  gap: 8px 12px;
+  min-height: 60px;
+  padding: 8px 16px;
+  border-radius: var(--radius-card);
+  list-style: none;
+  cursor: pointer;
+}
+
+.history summary::-webkit-details-marker { display: none; }
+
+.history .time { font-weight: 600; }
+.history .who { color: var(--text-muted); overflow-wrap: break-word; }
+
+.history .badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+
+.history .chevron { color: var(--text-muted); transition: transform var(--ease); }
+.history details[open] .chevron { transform: rotate(180deg); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge.bad { border-color: var(--bad); color: var(--bad-text); background: var(--bad-bg); }
+.badge.ok { border-color: var(--ok); color: var(--ok-text); background: var(--ok-bg); }
+.badge.pending { border-color: var(--border-strong); color: var(--text-muted); }
+
+.history-detail { padding: 0 16px 16px; }
+
+.history-detail h3 {
+  margin: 16px 0 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.history-detail ul { margin: 0; padding: 0; list-style: none; }
+
+.history-detail li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-left: 4px solid var(--border);
+  font-size: 0.9375rem;
+}
+
+.history-detail li + li { margin-top: 4px; }
+
+.history-detail li strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-align: right;
+}
+
+.history-detail .in_range { border-left-color: var(--ok); }
+.history-detail .in_range strong { color: var(--ok-text); }
+.history-detail .out_of_range { border-left-color: var(--bad); background: var(--bad-bg); }
+.history-detail .out_of_range strong { color: var(--bad-text); }
+.history-detail .skipped { border-left-color: var(--text-muted); }
+.history-detail .skipped strong { font-weight: 500; color: var(--text-muted); }
+
+.empty { color: var(--text-muted-on-tint); }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Small phones (320px) ---------- */
+
+@media (max-width: 359px) {
+  :root { --gutter-left: 8px; --gutter-right: 8px; }
+  .row { padding: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
